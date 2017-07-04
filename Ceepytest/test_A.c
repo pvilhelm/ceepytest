@@ -4,6 +4,8 @@
 print("Hello from Ceepytest running test_A.c!")
 */
  
+/*# print("This can be done too")*/ int a; /*# print("So can this")*/
+
 void a_func(int a){
 	//@reach	
 	return;
