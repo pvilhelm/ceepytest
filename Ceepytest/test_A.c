@@ -1,10 +1,12 @@
 #include <stdio.h>
 
 /*#
-print("Hello from Ceepytest running test_A.c!")
-*/
+print(r'printf("Hello from Ceepytest running test_A.c!"')
+print(C0 + " A c-comment ")
+print("Ceepytest captures stdout and writes it underneath the block" + C1)
+#*/
  
-/*# print("This can be done too")*/ int a; /*# print("So can this")*/
+/*# print("int") #*/ a = /*# print( 2+2, C+"So can this") #*/
 
 void a_func(int a){
 	//@reach	
@@ -22,8 +24,8 @@ int b_func(float b){
 /*!
 x = 1,2,3,4,5,6,7,8,9
 ans = 2,3,4,5,6,7,8,10
-*/
+!*/
 
 /*?
 b_func(@x) == @ans
-*/
+?*/
