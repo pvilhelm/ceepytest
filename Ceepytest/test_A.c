@@ -6,7 +6,7 @@ print(C0 + " A c-comment ")
 print("Ceepytest captures stdout and writes it underneath the block" + C1)
 #*/
  
-/*# print("int") #*/ a = /*# print( 2+2, C+"So can this") #*/
+/*# print("int",end="") #*/ a = /*# print( 2+2, C+"So can this") #*/
 
 void a_func(int a){
 	//@reach	

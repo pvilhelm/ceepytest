@@ -14,6 +14,8 @@ class cfile:
 
         self.dict_local_vars = {"C":"//", "C0":"/*", "C1":"*/"}
         self.dict_global_vars = {}
+        self.dict_assigns = {}
+
         # Parse Ceepytest code snipps
         self.first_pass()
         # Evaluate all those snipps
@@ -113,7 +115,7 @@ class cfile:
 
     def assigns(self, str):
         ret_str = ""
-        self.dict_assigns = {}
+        
 
 
 
