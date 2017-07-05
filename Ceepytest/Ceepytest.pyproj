@@ -21,12 +21,21 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="asserts.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ceepytest.py" />
     <Compile Include="cfile.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="asserts.c">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="asserts.h">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="test_A.c" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

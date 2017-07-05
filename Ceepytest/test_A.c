@@ -20,6 +20,7 @@ int b_func(float b){
 //? b_func(1) == 2 
 //? b_func(2) == 3
 //? b_func(0) != 0
+//? "hej" == s_hej
 
 /*!
 x = 1,2,3,4,5,6,7,8,9
