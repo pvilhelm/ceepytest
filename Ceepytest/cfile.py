@@ -10,7 +10,6 @@ from asserts import *
 VALID_COMP_LIST = ["==","!=","<",">","!>","!<","<=",">="]
 
 class cfile:
-
     def __init__(self, file_path):
         self.file_path = file_path
         f = open(file_path)
@@ -194,10 +193,9 @@ class cfile:
 
 def test():
     cf = cfile("test_A.c")
-    print(cf.out_c_str)
-    print("cfile.py self-test passed")
     f = open("out.c",'w')
     f.write(cf.out_c_str)
+    print("cfile.py self-test might have passed (it didn't raise errors, so check output file manually)")
     return True
 
 
