@@ -28,6 +28,9 @@
     <Compile Include="cfile.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cmain.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="asserts.c">
@@ -36,7 +39,7 @@
     <Content Include="asserts.h">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="test_A.c" />
+    <Content Include="test_A.ct" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

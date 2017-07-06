@@ -16,6 +16,7 @@ class cfile:
         self.full_str = f.read()
 
         self.file_name = os.path.basename(file_path)
+
         self.dict_local_vars = {"C":"//", "C0":"/*", "C1":"*/"}
         self.dict_global_vars = {}
         self.dict_assigns = {}
@@ -48,7 +49,7 @@ class cfile:
         #find all patterns //# ... \n
         for m in re.finditer(r"\/\/#(.*?)(\n)",self.full_str, re.DOTALL | re.MULTILINE):
             tmp_str = "\n"+m[1].strip() 
-            self.dict_strs[m.start(1)] = {"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
+            self.dict_strs[m.start(1)] = {"inline":False,"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
 
         
 
@@ -74,13 +75,9 @@ class cfile:
         #stich the strings together
         old_pos = 0
         for pos in pos_to_add_to:
-            self.out_c_str += self.full_str[old_pos:pos]
-            #self.out_c_str += "/* Start generated code from pos: %s */\n" % pos
-            self.out_c_str += self.c_str_additions[pos]
-            #self.out_c_str += "/* End generated code from pos: %s */\n" % pos
-            old_pos = pos
-            print(self.full_str+"\n")
-        
+            self.out_c_str += self.full_str[old_pos:pos] 
+            self.out_c_str += self.c_str_additions[pos] 
+            old_pos = pos 
         self.c_str_additions.clear()
 
         #if(old_pos<len(self.out_c_str)): #uneccesary?
@@ -105,10 +102,6 @@ class cfile:
         for m in re.finditer(r"\/\/\?(.*?)(\n)",self.out_c_str, re.DOTALL | re.MULTILINE):
             tmp_str = m[1].strip()
             self.dict_strs[m.start(1)] = {"type":"asserts","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
-        #for k,v in self.dict_strs.items():
-        #    print("key:"+str(k))
-        #    for k,v in v.items():
-        #        print("\t"+str(k)+":"+str(v))
 
         #process assigns
         for k in sorted(self.dict_strs.keys()):
@@ -131,9 +124,12 @@ class cfile:
         
         #stich the strings together
         old_pos = 0
-        self.out_c_str +="\n\nint ceepytest_"+self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")+"(){\n"
+        self.l_test_fcn_names = ["ceepytest_"+self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")]
+        self.out_c_str +="\n\nint "+self.l_test_fcn_names[0]+"(){\n"
         for pos in pos_to_add_to:
-            self.out_c_str += "    "+self.c_str_additions[pos]
+            for line in self.c_str_additions[pos].splitlines():
+                self.out_c_str += "    " + line + "\n"
+        self.out_c_str += "    return 0;\n"
         self.out_c_str += "}\n"
         self.c_str_additions.clear() 
 
@@ -164,10 +160,14 @@ class cfile:
 
         str_ret = ""
         #iterate over the assert lines and find lh, comparasion and rh
-        for a in re.finditer(r'^\s*([\w"]+(?:(?:->)|[\w\d.()"])*)\s*([=!<>]{1,2})\s*("?[\w\d.]+"?)\s*$',str,re.MULTILINE):
+        for a in re.finditer(r'^\s*(.*?)\s*([=!<>]{1,2})\s*(#)?(.+?)\s*$',str,re.MULTILINE):
             lh = a[1]
             comp = a[2]
-            rh = a[3]
+            if(a[3]):#if theres a # infront of rh expression it's python code
+                rh = eval(a[4],{},{}).__str__()
+            else:
+                rh = a[4]
+
             if comp not in VALID_COMP_LIST:
                 raise RuntimeError(comp+"not in VALID_COMP_LIST")
             if comp == "==":
@@ -191,10 +191,13 @@ class cfile:
 
         return str_ret
 
+    def save(self,path):
+        f = open(path,'w')
+        f.write(self.out_c_str)
+
 def test():
-    cf = cfile("test_A.c")
-    f = open("out.c",'w')
-    f.write(cf.out_c_str)
+    cf = cfile("test_A.ct")
+    cf.save("out.c")
     print("cfile.py self-test might have passed (it didn't raise errors, so check output file manually)")
     return True
 

@@ -1,0 +1,42 @@
+#include <stdio.h>
+
+/*#
+print(C0 +"\n*"+ "    Welcome to Ceepytest! A PHP-wannabe Python based C testing framework. ")
+print("*By writing python-ish code in a C-file a test is generated in C.\n" + C1)
+#*/
+ 
+//You can insert code inline too. 
+/*# print("int",end="") #*/ a = /*# print( 2+2, ";", C+"Add variables with python code in the c-code") #*/
+
+//# print("//This also works")
+
+//A sample function to test
+int add(int a,int b){
+	return a+b;
+}
+
+//Another one 
+int b_func(float b){
+	return b+1.1;
+}
+
+
+/* 
+ * Declare tests. The right hand side will be eval:ed 
+ * in as Python syntax and converted to a string.
+ */
+
+//? add(1,1) == #1+1
+//? add(-1,1) == #-1+1
+//? b_func(1) == #int(1.1+1) 
+//? b_func(0) != 0
+//? b_func(-44) == #int(-44+1.1)
+
+/*!
+x = 1,2,3,4,5,6,7,8,9
+ans = 2,3,4,5,6,7,8,10
+!*/
+
+/*?
+b_func(4) == 5
+?*/
