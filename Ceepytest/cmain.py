@@ -1,4 +1,4 @@
-
+﻿
 import cfile
 import datetime
 
@@ -16,7 +16,7 @@ class cmain:
             cf.save(path+"/"+cf.file_name.replace(".ct",".c"))
         
         str_main = self.make_main_file(path)
-        f = open(path+"/"+name,'w')
+        f = open(path+"/"+name,'w', encoding='utf-8')
         f.write(str_main)
 
         #cl -TC test_A.c test_main.c ./../asserts.c -I ./..

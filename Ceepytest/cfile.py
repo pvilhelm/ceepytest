@@ -1,4 +1,4 @@
-
+﻿
 
 import sys
 import os
@@ -12,7 +12,7 @@ VALID_COMP_LIST = ["==","!=","<",">","!>","!<","<=",">="]
 class cfile:
     def __init__(self, file_path):
         self.file_path = file_path
-        f = open(file_path)
+        f = open(file_path,'r',encoding='utf-8')
         self.full_str = f.read()
 
         self.file_name = os.path.basename(file_path)
@@ -136,20 +136,23 @@ class cfile:
 
     def remove_ceepyt_comment_lines(self,str):
         str_ret = ""
-        
-
+  
         ls = []
         for line in str.splitlines():
-            r = re.fullmatch(r'^((?:(?:.*?)[^\\])*?)§(.*)$',line)
+            r = re.fullmatch(r'^((?:(?:[^\\\n])|(?:\\.))*?)§(.*)$',line)
+            # matches --> qweqwe \§  § qweqwewqe
+            # or  -->  § qeqweqwe §§§§§
+            # etc, but not: qwe("\§");
             if r:
-                if r[1].isspace(): #only white space before comment
+                if r[1].isspace() or len(r[1]) == 0: #only white space before comment
                     continue # is a comment §
-                else:
-                    ls.append(r[1])
-            ls.append(line)
+                else:#otherwise append non-comments to list
+                    ls.append(r[1].replace(r"\§","§")) #replaces escaped §:s 
+            else:#no comments in line
+                ls.append(line)
         
         #preserve ending new line in str    
-        if(str[-1]=="\n"):
+        if(str[-1]=="\n"):#original string ended with \n
             return "\n".join(ls)+"\n"
         else:
             return "\n".join(ls)
@@ -181,10 +184,11 @@ class cfile:
             self.dict_assigns[name] = eval(value,{},dir_locals)
         
         #iterate over assigns and find function "redeclarations" e.g.  " volatile int* add() "
+                            #reg ex or line noise? Sorry ... it finds "type name(w/e);"
         for a in re.finditer(r"^\s*((?:(?:[\w*]+?[\w\d*]*?)+?\s*)+?)(\w+[\w\d]*\(\s*\))\s*;?\s*$",str,re.MULTILINE):
             type = a[1]
             name = a[2]
-            self.dict_fcn_decls["name"] = type
+            self.dict_fcn_decls[name] = type
         return ""
 
     def asserts(self,str):
@@ -198,7 +202,7 @@ class cfile:
             lh = a[1]
             r =  re.match(r'^\s*(\w+[\w\d]*)\s*\(.*\)\s*$',lh)
             if(r): #its a function on lh
-                f_type = self.dict_fcn_decls.get(r[1]) 
+                f_type = self.dict_fcn_decls.get(r[1]+"()") 
                 if not f_type: # no type specified in the code
                     f_type = "verbatim"
             else:
@@ -235,7 +239,7 @@ class cfile:
         return str_ret
 
     def save(self,path):
-        f = open(path,'w')
+        f = open(path,'w', encoding='utf-8')
         f.write(self.out_c_str)
 
 def test():

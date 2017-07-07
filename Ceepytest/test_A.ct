@@ -1,9 +1,9 @@
-#include <stdio.h>
+๏ปฟ#include <stdio.h>
 
 /*#
 print(C0 +"\n*"+ "    Welcome to Ceepytest! A PHP-wannabe Python based C testing framework. ")
 print("*By writing python-ish code in a C-file a test is generated in C.\n" + C1)
-ง This is a Ceepytest comment
+ยง This is a Ceepytest comment
 #*/
  
 //You can insert code inline too. 
@@ -21,6 +21,10 @@ int b_func(float b){
 	return b+1.1;
 }
 
+float f_add(float a, float b) {
+    return a + b;
+}
+
 
 /* 
  * Declare tests. The right hand side will be eval:ed 
@@ -28,8 +32,9 @@ int b_func(float b){
  */
 
 /*!
-int add()	 ง If you "redefine" a function like this, Ceepy will print return values nicely.
-int b_func() ง Otherwise, test values will be "preprocessed" inte to the C-file verbatim. 
+int add()	  ยง If you "redefine" a function like this, Ceepy will print return values nicely.
+int b_func()  ยง Otherwise, test values will be "preprocessed" inte to the C-file verbatim. 
+float f_add();ยง Ending ; is also legal
 !*/
 
 //? add(1,1) == #1+1
@@ -46,4 +51,7 @@ ans = 2,3,4,5,6,7,8,10
 /*?
 b_func(4) == 5
 b_func(4.45) == 6
+f_add(1.5,0.5) == 2
+f_add(10,100.1) == 110.1
 ?*/
+

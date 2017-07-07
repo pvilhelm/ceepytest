@@ -1,4 +1,4 @@
-import re
+﻿import re
 
 def std_str_assert_str(lh,comp,rh):
     str_ret = ""
@@ -19,7 +19,7 @@ def get_format_from_type(f_type):
         return "verbatim"
     if re.fullmatch(r'\s*(signed\s)?\s*long(\s+int)?\s*\*?\s*',f_type):
         return "%li"
-    if re.fullmatch(r'\s*((signed\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
+    if re.fullmatch(r'\s*(signed\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
         return "%lli"
     if re.fullmatch(r'\s*(signed\s)?\s*int\s*\*?\s*',f_type):
         return "%i"
@@ -27,9 +27,9 @@ def get_format_from_type(f_type):
         return "%hi"
     if re.fullmatch(r'\s*(unsigned\s)?\s*long(\s+int)?\s*\*?\s*',f_type):
         return "%lu"
-    if re.fullmatch(r'\s*((unsigned\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
+    if re.fullmatch(r'\s*(unsigned\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
         return "%llu"
-    if re.fullmatch(r'\s*unsigned\s*(int)?\s*\*?\s*',f_type):
+    if re.fullmatch(r'\s*(unsigned\s)?\s*(int)?\s*\*?\s*',f_type):
         return "%u"
     if re.fullmatch(r'\s*(unsigned\s)?\s*short(\s+int)?\s*\*?\s*',f_type):
         return "%hu"
@@ -66,12 +66,12 @@ def std_assert_str(lh,comp,rh,f_type):
         str_ret += "{\n"
         str_ret += "    "+f_type +"tmp = "+lh+";\n"
         str_ret += "    "+"if(assert_true("+ptr+"tmp "+comp+rh+")){\n"
-        str_ret += "    "+"    "+"int errn = test_failed(\""+lh+comp+rh+"\n\");\n"
-        str_ret += "    "+"    "+"printf(\"        Actual:"+format+" "+comp+" "+format+"\n\","+ptr+"tmp,"+rh+");\n"
+        str_ret += "    "+"    "+"int errn = test_failed(\""+lh+comp+rh+"\\n\");\n"
+        str_ret += "    "+"    "+"printf(\"        Actual:"+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+rh+");\n"
         str_ret += "    "+"    "+"return errn;\n"
         str_ret += "    "+"} else {\n"
         str_ret += "    "+"    "+"test_passed(\""+lh+comp+rh+"\");\n"
-        str_ret += "    "+"    "+"printf(\"        Actual:"+format+" "+comp+" "+format+"\n\","+ptr+"tmp,"+rh+");\n"
+        str_ret += "    "+"    "+"printf(\"        Actual:"+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+rh+");\n"
         str_ret += "    "+"}\n"
         str_ret += "}\n"
         return str_ret 
