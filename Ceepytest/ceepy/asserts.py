@@ -18,41 +18,45 @@ def get_format_from_type(f_type):
     if f_type == "verbatim": #dont check if we know there are no type
         return "verbatim"
     if re.fullmatch(r'\s*(signed\s)?\s*long(\s+int)?\s*\*?\s*',f_type):
-        return "%li"
+        return "%li", "long"
     if re.fullmatch(r'\s*(signed\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
-        return "%lli"
+        return "%lli","long long"
     if re.fullmatch(r'\s*(signed\s)?\s*int\s*\*?\s*',f_type):
-        return "%i"
+        return "%i","int"
     if re.fullmatch(r'\s*(signed\s)?\s*short(\s+int)?\s*\*?\s*',f_type):
-        return "%hi"
-    if re.fullmatch(r'\s*(unsigned\s)?\s*long(\s+int)?\s*\*?\s*',f_type):
-        return "%lu"
-    if re.fullmatch(r'\s*(unsigned\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
-        return "%llu"
-    if re.fullmatch(r'\s*(unsigned\s)?\s*(int)?\s*\*?\s*',f_type):
-        return "%u"
+        return "%hi","short"
+    if re.fullmatch(r'\s*(unsigned\s)\s*long(\s+int)?\s*\*?\s*',f_type):
+        return "%lu","unsigned long"
+    if re.fullmatch(r'\s*(unsigned\s)\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
+        return "%llu", "unsigned long long"
+    if re.fullmatch(r'\s*(unsigned\s)\s*(int)?\s*\*?\s*',f_type):
+        return "%u", "unsigned int"
     if re.fullmatch(r'\s*(unsigned\s)?\s*short(\s+int)?\s*\*?\s*',f_type):
-        return "%hu"
+        return "%hu", "unsigned short"
     if re.fullmatch(r'\s*float\s*\*?\s*',f_type):
-        return "%f"
+        return "%.9g", "float"
     if re.fullmatch(r'\s*double\s*\*?\s*',f_type):
-        return "%f"
+        return "%.17g", "double"
     if re.fullmatch(r'\s*long\s*double\s*\*?\s*',f_type):
-        return "%Lf"
+        return "%Lf", "long double"
     if re.fullmatch(r'\s*((un)?signed\s)?\s*char\s*\*?\s*',f_type):
-        return "%c"
+        return "%c", "char"
     return "verbatim" #fallback type
 
 def std_assert_str(lh,comp,rh,f_type):
     str_ret = ""
 
-    format = get_format_from_type(f_type) #check if type suits printf()
+    lh = lh.strip()
+    rh = rh.strip()
+    f_type = f_type.strip()
+
+    format, type = get_format_from_type(f_type) #check if type suits printf()
 
     if f_type == "verbatim" or format == "verbatim":
-        str_ret += "if(assert_true("+lh+comp+rh+")){\n"
-        str_ret += "    return test_failed(\""+lh+comp+rh+"\");\n"
+        str_ret += "if(assert_true("+lh+" "+comp+" "+rh+")){\n"
+        str_ret += "    return test_failed(\""+lh+" "+comp+" "+rh+"\");\n"
         str_ret += "} else {\n"
-        str_ret += "    test_passed(\""+lh+comp+rh+"\");\n"
+        str_ret += "    test_passed(\""+lh+" "+comp+" "+rh+"\");\n"
         str_ret += "}\n"
         return str_ret
     else: #the function type is specified
@@ -63,15 +67,21 @@ def std_assert_str(lh,comp,rh,f_type):
         else:
             ptr = ""
 
+        # explicity cast rh to lh's type 
+        #to prevent eg. int literals comparations with floats to mess up printf
+        type_p = "("+type+")" 
+        
         str_ret += "{\n"
-        str_ret += "    "+f_type +"tmp = "+lh+";\n"
-        str_ret += "    "+"if(assert_true("+ptr+"tmp "+comp+rh+")){\n"
-        str_ret += "    "+"    "+"int errn = test_failed(\""+lh+comp+rh+"\\n\");\n"
-        str_ret += "    "+"    "+"printf(\"        Actual:"+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+rh+");\n"
-        str_ret += "    "+"    "+"return errn;\n"
+        str_ret += "    "+f_type +" tmp = "+lh+";\n"
+        str_ret += "    "+"if(assert_true("+ptr+"tmp "+comp+" "+rh+")){\n"
+        str_ret += "    "+"    "+'printf("    Assert failed with message:\\n");\n'
+        str_ret += "    "+"    "+"printf(\"        "+lh+" "+comp+" "+rh+"\\n\");\n"
+        str_ret += "    "+"    "+"printf(\"        Actual: "+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+type_p+"("+rh+")"+");\n"
+        str_ret += "    "+"    "+"return -1;\n"
         str_ret += "    "+"} else {\n"
-        str_ret += "    "+"    "+"test_passed(\""+lh+comp+rh+"\");\n"
-        str_ret += "    "+"    "+"printf(\"        Actual:"+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+rh+");\n"
+        str_ret += "    "+"    "+'printf("    Assert passed with message:\\n");\n'
+        str_ret += "    "+"    "+"printf(\"        "+lh+" "+comp+" "+rh+"\\n\");\n"
+        str_ret += "    "+"    "+"printf(\"        Actual: "+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+type_p+"("+rh+")"+");\n"
         str_ret += "    "+"}\n"
         str_ret += "}\n"
         return str_ret 

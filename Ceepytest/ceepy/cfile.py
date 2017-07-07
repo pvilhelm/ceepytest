@@ -18,6 +18,7 @@ class cfile:
         self.file_name = os.path.basename(file_path)
 
         self.dict_local_vars = {"C":"//", "C0":"/*", "C1":"*/"}
+        exec("from eval_util import *",{},self.dict_local_vars)
         self.dict_global_vars = {}
         self.dict_assigns = {}
         self.dict_asserts = {}
@@ -174,7 +175,7 @@ class cfile:
 
         #setup enviroment
         dir_locals = {}
-        exec("from math import *",{},dir_locals)
+        exec("from eval_util import *",{},dir_locals)
 
         #iterate over the assigns expressions and evaluate the right hand side
         #and assign its value to the left hand side and add it to assign dict
@@ -211,9 +212,19 @@ class cfile:
 
             comp = a[2]
             if(a[3]):#if theres a # infront of rh expression it's python code
-                rh = eval(a[4],{},{}).__str__()
+                rh = eval(a[4],{},{}).__str__() #eval python code
             else:
                 rh = a[4]
+
+
+                # ok so add this if thers gonna be problem with comparing floats and doubles
+            #if lh is float, convert rh string so it ends with f
+            #if f_type.find("float")>0:
+                #check if rh is not a floating point literal
+                #iterate over all float literals and add f if missing (so that printf doesnt
+                # try 
+            #    for r in re.finditer(r'\s*[+-]?\s*\d*\.?\d*(?:(?:e|E)[+-]?\d*)?([fFLl])?\s*',rh):
+                 
 
             if comp not in VALID_COMP_LIST:
                 raise RuntimeError(comp+"not in VALID_COMP_LIST")

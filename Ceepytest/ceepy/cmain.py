@@ -43,19 +43,23 @@ class cmain:
         str_main += "    "+"/* Iterate all registred tests ... */\n"
         str_main += "\n"
 
+        
         #generate function calls and checks for all tests 
         for cf in self.l_cfiles:
             str_main += "    "+"/* Test functions from file "+cf.file_name+" */\n"
+            str_main += "    "+'printf("Starting sub-tests in: '+cf.file_name+'\\n");\n'
             for fcn in cf.l_test_fcn_names:
+                str_main += "    "+"    "+'printf("\\n    Starting sub-test '+fcn+'() ... \\n\\n");\n'
                 str_main += "    "+"if("+fcn+"()){\n"
                 str_main += "    "+"    "+"/* Test failed */\n"
                 str_main += "    "+"    "+'printf("Test '+fcn+'() failed\\nAborting ...\\n");\n'
                 str_main += "    "+"    "+'exit(EXIT_FAILURE);\n'
                 str_main += "    "+"} else {\n"
                 str_main += "    "+"    "+"/* Test suceeded */\n"
-                str_main += "    "+"    "+'printf("Test '+fcn+'() passed ... \\n");\n'
+                str_main += "    "+"    "+'printf("\\n    Sub-test '+fcn+'() passed ... \\n\\n");\n'
                 str_main += "    "+"}\n"
             str_main +="\n"
+            str_main += "    "+'printf("Sub-tests passed in: '+cf.file_name+'\\n\\n");\n'
         str_main += "\n"
 
         #end test

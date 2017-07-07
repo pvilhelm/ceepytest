@@ -1,15 +1,16 @@
 ﻿#include <stdio.h>
 
 /*#
-print(C0 +"\n*"+ "    Welcome to Ceepytest! A PHP-wannabe Python based C testing framework. ")
-print("*By writing python-ish code in a C-file a test is generated in C.\n" + C1)
-§ This is a Ceepytest comment
+print(C0 +"\n *"+ "    Welcome to Ceepytest! A PHP-wannabe Python based C testing framework. ")
+print(" *By writing python-ish code in a C-file a test is generated in C.\n" + C1)
+§ This is a Ceepytest comment.
+§ C0 and C1 are predefined strings for beginning and ending multiline C-comment
 #*/
  
-//You can insert code inline too. 
-/*# print("int",end="") #*/ a = /*# print( 2+2, ";", C+"Add variables with python code in the c-code") #*/
+//You can insert code inline too. p(s) is sugar for print(s,end="") (No new line)
+/*# p("int") #*/ a = /*# print( 2+2, ";", C+"Add variables with python code in the c-code") #*/
 
-//# print("//This also works")
+//# pl("//C++ style comments also work. pl() prints a new line")
 
 //A sample function to test
 int add(int a,int b){
@@ -50,8 +51,8 @@ ans = 2,3,4,5,6,7,8,10
 
 /*?
 b_func(4) == 5
-b_func(4.45) == 6
+b_func(4.45) == 5
 f_add(1.5,0.5) == 2
-f_add(10,100.1) == 110.1
+f_add(10,100.1) == 110.099998f
 ?*/
 
