@@ -3,6 +3,7 @@
 /*#
 print(C0 +"\n*"+ "    Welcome to Ceepytest! A PHP-wannabe Python based C testing framework. ")
 print("*By writing python-ish code in a C-file a test is generated in C.\n" + C1)
+§ This is a Ceepytest comment
 #*/
  
 //You can insert code inline too. 
@@ -26,6 +27,11 @@ int b_func(float b){
  * in as Python syntax and converted to a string.
  */
 
+/*!
+int add()	 § If you "redefine" a function like this, Ceepy will print return values nicely.
+int b_func() § Otherwise, test values will be "preprocessed" inte to the C-file verbatim. 
+!*/
+
 //? add(1,1) == #1+1
 //? add(-1,1) == #-1+1
 //? b_func(1) == #int(1.1+1) 
@@ -39,4 +45,5 @@ ans = 2,3,4,5,6,7,8,10
 
 /*?
 b_func(4) == 5
+b_func(4.45) == 6
 ?*/

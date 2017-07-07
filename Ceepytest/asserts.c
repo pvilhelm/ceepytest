@@ -13,7 +13,7 @@ int assert_str_eq(char* lh, char* rh) {
 }
 
 int test_failed(char* msg) {
-    printf("    Sub-test failed with message:\n%s\n", msg);
+    printf("    Sub-test failed with message:\n        %s\n", msg);
     return 1;
 }
 

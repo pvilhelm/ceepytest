@@ -21,6 +21,7 @@ class cfile:
         self.dict_global_vars = {}
         self.dict_assigns = {}
         self.dict_asserts = {}
+        self.dict_fcn_decls = {}
 
         # Parse Ceepytest code snipps
         self.first_pass()
@@ -37,14 +38,14 @@ class cfile:
         #first dict: key
         
         # Python inline code
-        #find all patterns /*# ... */ 
+        #find all patterns /*# ... #*/ 
         for m in re.finditer(r"\/\*#(.*?)(#\*\/)",self.full_str, re.DOTALL | re.MULTILINE):
             tmp_str = m[1].strip()
             self.dict_strs[m.start(1)] = {"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
             if(m[0].find('\n')!=-1):    #code segment spans multiple lines so add new line to the output later
-                self.dict_strs[m.start(1)]["inline"] = True
-            else:
                 self.dict_strs[m.start(1)]["inline"] = False
+            else:
+                self.dict_strs[m.start(1)]["inline"] = True
 
         #find all patterns //# ... \n
         for m in re.finditer(r"\/\/#(.*?)(\n)",self.full_str, re.DOTALL | re.MULTILINE):
@@ -65,7 +66,7 @@ class cfile:
             d = self.dict_strs[k]
             type = d["type"]
             if(type == "py_inline"):
-                self.c_str_additions[d["after"]] = ("\n" if d["inline"] else " ") + self.py_inline(d["str"])
+                self.c_str_additions[d["after"]] = (" " if d["inline"] else "\n") + self.py_inline(d["str"])
 
         #add the python inline code output to the c-file
         self.out_c_str = ""
@@ -133,8 +134,30 @@ class cfile:
         self.out_c_str += "}\n"
         self.c_str_additions.clear() 
 
+    def remove_ceepyt_comment_lines(self,str):
+        str_ret = ""
+        
 
-    def py_inline(self, str):    
+        ls = []
+        for line in str.splitlines():
+            r = re.fullmatch(r'^((?:(?:.*?)[^\\])*?)§(.*)$',line)
+            if r:
+                if r[1].isspace(): #only white space before comment
+                    continue # is a comment §
+                else:
+                    ls.append(r[1])
+            ls.append(line)
+        
+        #preserve ending new line in str    
+        if(str[-1]=="\n"):
+            return "\n".join(ls)+"\n"
+        else:
+            return "\n".join(ls)
+
+         
+
+    def py_inline(self, str):
+        str = self.remove_ceepyt_comment_lines(str)
         old_stdout = sys.stdout
         my_stdout = sys.stdout = StringIO()
         exec(str,self.dict_global_vars,self.dict_local_vars)
@@ -144,6 +167,8 @@ class cfile:
         return ret_str
 
     def assigns(self, str):
+        str = self.remove_ceepyt_comment_lines(str)
+
         #setup enviroment
         dir_locals = {}
         exec("from math import *",{},dir_locals)
@@ -154,14 +179,32 @@ class cfile:
             name = a[1]
             value = a[2]
             self.dict_assigns[name] = eval(value,{},dir_locals)
+        
+        #iterate over assigns and find function "redeclarations" e.g.  " volatile int* add() "
+        for a in re.finditer(r"^\s*((?:(?:[\w*]+?[\w\d*]*?)+?\s*)+?)(\w+[\w\d]*\(\s*\))\s*;?\s*$",str,re.MULTILINE):
+            type = a[1]
+            name = a[2]
+            self.dict_fcn_decls["name"] = type
         return ""
 
     def asserts(self,str):
+        str = self.remove_ceepyt_comment_lines(str)
 
         str_ret = ""
         #iterate over the assert lines and find lh, comparasion and rh
         for a in re.finditer(r'^\s*(.*?)\s*([=!<>]{1,2})\s*(#)?(.+?)\s*$',str,re.MULTILINE):
+
+            #check if lh is a "redeclared" function
             lh = a[1]
+            r =  re.match(r'^\s*(\w+[\w\d]*)\s*\(.*\)\s*$',lh)
+            if(r): #its a function on lh
+                f_type = self.dict_fcn_decls.get(r[1]) 
+                if not f_type: # no type specified in the code
+                    f_type = "verbatim"
+            else:
+                f_type = "verbatim"
+
+
             comp = a[2]
             if(a[3]):#if theres a # infront of rh expression it's python code
                 rh = eval(a[4],{},{}).__str__()
@@ -171,21 +214,21 @@ class cfile:
             if comp not in VALID_COMP_LIST:
                 raise RuntimeError(comp+"not in VALID_COMP_LIST")
             if comp == "==":
-                str_ret += assert_eq(lh,rh)
+                str_ret += assert_eq(lh,rh,f_type)
             elif comp == "!=":
-                str_ret += assert_not_eq(lh,rh)
+                str_ret += assert_not_eq(lh,rh,f_type)
             elif comp == "<=":
-                str_ret += assert_less_eq(lh,rh)
+                str_ret += assert_less_eq(lh,rh,f_type)
             elif comp == ">=":
-                str_ret += assert_greater_eq(lh,rh)
+                str_ret += assert_greater_eq(lh,rh,f_type)
             elif comp == ">":
-                str_ret += assert_greater(lh,rh)
+                str_ret += assert_greater(lh,rh,f_type)
             elif comp == "<":
-                str_ret += assert_less(lh,rh)
+                str_ret += assert_less(lh,rh,f_type)
             elif comp == "!<":
-                str_ret += assert_greater_eq(lh,rh)
+                str_ret += assert_greater_eq(lh,rh,f_type)
             elif comp == "!>":
-                str_ret += assert_less_eq(lh,rh)
+                str_ret += assert_less_eq(lh,rh,f_type)
             else:
                 raise RuntimeError(comp+"is missed in switch case statements")
 
