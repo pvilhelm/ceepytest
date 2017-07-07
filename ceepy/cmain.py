@@ -1,6 +1,7 @@
 ﻿
 import cfile
 import datetime
+import os
 
 class cmain:
 
@@ -10,16 +11,25 @@ class cmain:
     def add_cfile(self, cf):
         self.l_cfiles.append(cf)
 
-    def make_test_files(self, path, name):
-
-        for cf in self.l_cfiles:
-            cf.save(path+"/"+cf.file_name.replace(".ct",".c"))
+    def make_test_files(self, trgt_folder, trgt_test_c,ceepy_path): 
+        self.ceepy_path = ceepy_path #path to ceepy module
+        self.trgt_folder = trgt_folder #folder to put generated files in
+        self.name = trgt_test_c #name of test
         
-        str_main = self.make_main_file(path)
-        f = open(path+"/"+name,'w', encoding='utf-8')
+        #save .ct-files to target folder
+        for cf in self.l_cfiles:
+            cf.save(self.trgt_folder+"/"+cf.file_name.replace(".ct",".c"))
+        
+        #make main file and save it in target folder
+        str_main = self.make_main_file(self.trgt_folder)
+        f = open(self.trgt_folder+"/"+self.name+".c",'w', encoding='utf-8-sig')
         f.write(str_main)
-
-        #cl -TC test_A.c test_main.c ./../asserts.c -I ./..
+         
+        #make compile bat file
+        str_comp_script = self.make_compile_script()
+        f = open(self.trgt_folder+"/compile_"+self.name+".bat",'w', encoding='utf-8-sig')
+        f.write(str_comp_script)
+        f.close()
 
     def make_main_file(self, path):
         str_main = ""
@@ -69,3 +79,11 @@ class cmain:
         str_main += "}\n"
 
         return str_main
+
+    def make_compile_script(self):
+
+        ret_str = ""
+        ret_str += "cd /D "+os.path.abspath(self.trgt_folder)+"\n"
+        ret_str += "cl -TC * "+self.ceepy_path+"\\src\\asserts.c"+" "+"-I"+" "+self.ceepy_path+"\\includes"+"\n"
+
+        return ret_str

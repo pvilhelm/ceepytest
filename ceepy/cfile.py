@@ -12,7 +12,7 @@ VALID_COMP_LIST = ["==","!=","<",">","!>","!<","<=",">="]
 class cfile:
     def __init__(self, file_path):
         self.file_path = file_path
-        f = open(file_path,'r',encoding='utf-8')
+        f = open(file_path,'r',encoding='utf-8-sig')
         self.full_str = f.read()
 
         self.file_name = os.path.basename(file_path)
@@ -250,7 +250,7 @@ class cfile:
         return str_ret
 
     def save(self,path):
-        f = open(path,'w', encoding='utf-8')
+        f = open(path,'w', encoding='utf-8-sig')
         f.write(self.out_c_str)
 
 def test():
