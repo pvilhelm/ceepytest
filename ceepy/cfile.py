@@ -17,12 +17,16 @@ class cfile:
 
         self.file_name = os.path.basename(file_path)
 
+        self.out_c_str = "" #eventually this will be the output .c-file
+
         self.dict_local_vars = {"C":"//", "C0":"/*", "C1":"*/"}
         exec("from eval_util import *",{},self.dict_local_vars)
         self.dict_global_vars = {}
         self.dict_assigns = {}
         self.dict_asserts = {}
         self.dict_fcn_decls = {}
+        self.l_always_include = ["<stdio.h>",'"asserts.h"']
+        self.l_test_fcn_names = []
 
         # Parse Ceepytest code snipps
         self.first_pass()
@@ -42,7 +46,13 @@ class cfile:
         #find all patterns /*# ... #*/ 
         for m in re.finditer(r"\/\*#(.*?)(#\*\/)",self.full_str, re.DOTALL | re.MULTILINE):
             tmp_str = m[1].strip()
-            self.dict_strs[m.start(1)] = {"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
+            #count intendations
+            pos = self.full_str.rfind("\n",0,m.start(0))
+            if pos == -1: #if we cant find any new line this is the first line
+                pos = 0
+            intend = len(self.full_str[pos+1:m.start(0)].replace("\t","    "))
+
+            self.dict_strs[m.start(1)] = {"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str,"intend":intend}
             if(m[0].find('\n')!=-1):    #code segment spans multiple lines so add new line to the output later
                 self.dict_strs[m.start(1)]["inline"] = False
             else:
@@ -51,9 +61,17 @@ class cfile:
         #find all patterns //# ... \n
         for m in re.finditer(r"\/\/#(.*?)(\n)",self.full_str, re.DOTALL | re.MULTILINE):
             tmp_str = "\n"+m[1].strip() 
-            self.dict_strs[m.start(1)] = {"inline":False,"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
+            #count intendations
+            pos = self.full_str.rfind("\n",0,m.start(0))
+            if pos == -1: #if we cant find any new line this is the first line
+                pos = 0
+            intend = len(self.full_str[pos+1:m.start(0)].replace("\t","    "))
+            self.dict_strs[m.start(1)] = {"inline":False,"type":"py_inline","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str,"intend":intend}
 
-        
+        #check if the l_always_includes are in the file, otherwise add them
+        for inc in self.l_always_include:
+            if not re.search(r'^\s*#include\s*'+inc+"\s*$",self.full_str, re.MULTILINE):
+                self.out_c_str += "#include "+inc+"\n"
 
     def sec_pass(self):
         """Construct c-code for inline python """
@@ -62,16 +80,14 @@ class cfile:
 
         #iterate over all dict entrys and call the correct function if the entry
         #needs to be run before other code (i.e inline python code that can write
-        #more Ceepytest code) /*# ... #*/
+        #more Ceepytest code) /*# ... #*/ or //#
         for k in sorted(self.dict_strs.keys()):
             d = self.dict_strs[k]
             type = d["type"]
             if(type == "py_inline"):
-                self.c_str_additions[d["after"]] = (" " if d["inline"] else "\n") + self.py_inline(d["str"])
+                self.c_str_additions[d["after"]] = " "+ self.py_inline(d["str"]) if d["inline"] else "\n"+self.intend_lines(self.py_inline(d["str"]),d["intend"]) 
 
         #add the python inline code output to the c-file
-        self.out_c_str = ""
-
         pos_to_add_to = sorted(self.c_str_additions.keys())
         
         #stich the strings together
@@ -85,7 +101,7 @@ class cfile:
         #if(old_pos<len(self.out_c_str)): #uneccesary?
         self.out_c_str += self.full_str[old_pos:]
         
-        # Assignments
+        # Assignments and declarations
         #find all patterns /*! ... */
         for m in re.finditer(r"\/\*!(.*?)(!\*\/)",self.out_c_str, re.DOTALL | re.MULTILINE):
             tmp_str = m[1].strip()
@@ -104,12 +120,54 @@ class cfile:
         for m in re.finditer(r"\/\/\?(.*?)(\n)",self.out_c_str, re.DOTALL | re.MULTILINE):
             tmp_str = m[1].strip()
             self.dict_strs[m.start(1)] = {"type":"asserts","start":m.start(1),"end":m.end(1),"after":m.end(2),"str":tmp_str}
+        
+        # Local scop asserts
+        #find all patterns /*% ... %*/
+        for m in re.finditer(r"^(\s*)\/\*%(.*?)(%\*\/)",self.out_c_str, re.DOTALL | re.MULTILINE):
+            tmp_str = m[2].strip()
+            intend = len(m[1].replace("\t","    "))
+            self.dict_strs[m.start(1)] = {"type":"local_asserts","start":m.start(2),"end":m.end(2),"after":m.end(3),"str":tmp_str,"intend":intend}
+        #find all patterns //%-
+        for m in re.finditer(r"^(\s*)\/\/%(.*?)(\n)",self.out_c_str, re.DOTALL | re.MULTILINE):
+            tmp_str = m[2].strip()
+            intend = len(m[1].replace("\t","    "))
+            self.dict_strs[m.start(1)] = {"type":"local_asserts","start":m.start(2),"end":m.end(2),"after":m.end(3),"str":tmp_str,"intend":intend}
 
+        # find all functions on the form "int test_**** ( )" 
+        for m in re.finditer(r"^\s*(int)\s*(?:(test_[\w\d]*)\s*\(\s*\))",self.out_c_str, re.DOTALL | re.MULTILINE):
+            tmp_str = m[2].strip()
+            start_pos = m.end(2)
+ 
+            #self.dict_strs[m.start(1)] = {"type":"test_fcn_decl","start":m.start(2),"end":m.end(2),"after":m.end(2),"str":tmp_str}
+            self.l_test_fcn_names.append(tmp_str)
+             
         #process assigns
         for k in sorted(self.dict_strs.keys()):
             d = self.dict_strs[k]
             if d["type"]=="assigns":
                 self.assigns(d["str"])
+
+        #process local scope asserts
+        for k in sorted(self.dict_strs.keys()):
+            d = self.dict_strs[k]
+            if d["type"]=="local_asserts":
+                self.c_str_additions[d["after"]] = self.intend_lines(self.asserts(d["str"]),d["intend"])
+
+        pos_to_add_to = sorted(self.c_str_additions.keys())
+        
+        #stich the strings together (local scope asserts added 
+        old_pos = 0
+        old_out_c_str = self.out_c_str
+        self.out_c_str = ""
+
+        for pos in pos_to_add_to:
+            self.out_c_str += old_out_c_str[old_pos:pos] 
+            self.out_c_str += self.c_str_additions[pos] 
+            old_pos = pos 
+        self.c_str_additions.clear()
+
+        #if(old_pos<len(self.out_c_str)): #uneccesary?
+        self.out_c_str += old_out_c_str[old_pos:]
 
     def third_pass(self):
         #process asserts
@@ -117,7 +175,7 @@ class cfile:
             d = self.dict_strs[k]
             if d["type"]=="asserts":
                 self.c_str_additions[d["after"]] = self.asserts(d["str"])
-
+            
         #add the python inline code output to the c-file
         #out_c_str_old = self.out_c_str #copy from out string
         #self.out_c_str = "" #reset it first
@@ -125,9 +183,21 @@ class cfile:
         pos_to_add_to = sorted(self.c_str_additions.keys())
         
         #stich the strings together
-        old_pos = 0
-        self.l_test_fcn_names = ["ceepytest_"+self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")]
-        self.out_c_str +="\n\nint "+self.l_test_fcn_names[0]+"(){\n"
+         
+               
+
+        # Add the function scope asserts to it's function
+        #old_out_c_str = self.out_c_str
+        #for pos in pos_to_add_to:
+        #    for line in self.c_str_additions[pos].splitlines():
+        #        self.out_c_str += "    " + line + "\n"        
+
+        # Add the "file scope" asserts to a function last in the .c-file
+        main_test_fcn_name = "ceepytest_"+self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")
+        self.l_test_fcn_names.append(main_test_fcn_name)
+
+       
+        self.out_c_str +="\n\nint "+main_test_fcn_name+"(){\n"
         for pos in pos_to_add_to:
             for line in self.c_str_additions[pos].splitlines():
                 self.out_c_str += "    " + line + "\n"
@@ -252,6 +322,17 @@ class cfile:
     def save(self,path):
         f = open(path,'w', encoding='utf-8-sig')
         f.write(self.out_c_str)
+
+    def intend_lines(self, str, n_spaces):
+        str_ret = ""
+        spaces = " "*n_spaces
+        l_strs = str.splitlines(keepends = True)
+        for line in l_strs:
+            if line == "\n": #dont indent empty lines
+                str_ret += line
+            else:
+                str_ret += spaces+line
+        return str_ret
 
 def test():
     cf = cfile("test_A.ct")

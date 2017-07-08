@@ -1,58 +1,65 @@
 ﻿#include <stdio.h>
+#include <stdint.h>
 
-/*#
-print(C0 +"\n *"+ "    Welcome to Ceepytest! A PHP-wannabe Python based C testing framework. ")
-print(" *By writing python-ish code in a C-file a test is generated in C.\n" + C1)
-§ This is a Ceepytest comment.
-§ C0 and C1 are predefined strings for beginning and ending multiline C-comment
-#*/
+/*
+ * Ceepy test file simple_example.ct
+ *
+ * This is a simple example without external files linked in.
+ */
  
-//You can insert code inline too. p(s) is sugar for print(s,end="") (No new line)
-/*# p("int") #*/ a = /*# print( 2+2, ";", C+"Add variables with python code in the c-code") #*/
+/* Lets define some functions to test */
 
-//# pl("//C++ style comments also work. pl() prints a new line")
-
-//A sample function to test
-int add(int a,int b){
+int add(int a, int b){
 	return a+b;
+} 
+
+int mult(int a, int b){
+	return a*b;
 }
 
-//Another one 
-int b_func(float b){
-	return b+1.1;
+float fmax(float a, float b){
+	// NAN will mess this up
+	return a < b ? b : a;	
 }
 
-float f_add(float a, float b) {
-    return a + b;
-}
-
+/*
+ * For better test feedback, functions return types need to be specified.
+ * /_*_! starts a Ceepy !-block, declare blocks.
+ * § is a one line Ceepy comment in a Ceepy block
+ */
+ 
+/*!
+int add()	  	§ If you "redefine" a function like this, Ceepy will print return values nicely.
+int b_func()  	§ Otherwise, test values will be "preprocessed" inte to the C-file verbatim. 
+float f_add();	§ Ending the statement with ";" is legal but optional
+!*/             
 
 /* 
- * Declare tests. The right hand side will be eval:ed 
- * in as Python syntax and converted to a string.
+ * Declare assertions with the Ceepy ?-block. The right hand side will be eval:ed 
+ * in as Python syntax and converted to a string if it has the prefix #.
+ * Both C++-style comments and C-style comments with the block marker is legal. 
+ *
+ * All assert blocks in file scope will be evaluated in the order they are written,
+ * and the tests are put in the button of the file. 
  */
 
-/*!
-int add()	  § If you "redefine" a function like this, Ceepy will print return values nicely.
-int b_func()  § Otherwise, test values will be "preprocessed" inte to the C-file verbatim. 
-float f_add();§ Ending ; is also legal
-!*/
+//? add(1,1) == 2    				§ Assert that 1+1 == 2 for our function
+//? add(1234,4321) == #1234+4321   	§ To much math for me, lets use Python inline
 
-//? add(1,1) == #1+1
-//? add(-1,1) == #-1+1
-//? b_func(1) == #int(1.1+1) 
-//? b_func(0) != 0
-//? b_func(-44) == #int(-44+1.1)
+/* Multi line assert-block treats each line as a separate assertion */
 
-/*!
-x = 1,2,3,4,5,6,7,8,9
-ans = 2,3,4,5,6,7,8,10
-!*/
+/*? § 
+add(INT_MAX,1) == INT_MIN 		§ Overflows to INT_MIN
+add(INT_MAX,INT_MAX) == -2      § Same thing as INT_MAX << 1	
+?*/ 
+ 
+/* Lets test mult() also */
 
 /*?
-b_func(4) == 5
-b_func(4.45) == 5
-f_add(1.5,0.5) == 2
-f_add(10,100.1) == 110.099998f
-?*/
+mult(1,1) == 1
+mult(0,INT_MAX) == 0
+mult(-100,123) == # -100*123
+mult(INT_MAX,INT_MIN) == 
+
+
 

@@ -1,22 +1,15 @@
 ﻿import re
 
-def std_str_assert_str(lh,comp,rh):
-    str_ret = ""
-    str_ret += "if(!(assert_str_eq("+lh+","+rh+") "+comp+" 0 )){\n"
-    str_ret += "    return test_failed(\""+lh.replace("\"","\\\"")+comp.replace("\"","\\\"")+rh.replace("\"","\\\"")+"\");\n"
-    str_ret += "} else {\n"
-    str_ret += "    test_passed(\""+lh.replace("\"","\\\"")+comp.replace("\"","\\\"")+rh.replace("\"","\\\"")+"\");\n"
-    str_ret += "}\n"
-    return str_ret
+
 
 def get_format_from_type(f_type):
     # N.B. only sane type orders allowed. I.e "unsigned long long int *" is OK
     # but "long int unsigned long *" etc. will default to verbatim ... 
     if not f_type:
-        return "verbatim"
+        return "%s","verbatim"
 
     if f_type == "verbatim": #dont check if we know there are no type
-        return "verbatim"
+        return "%s","verbatim"
     if re.fullmatch(r'\s*(signed\s)?\s*long(\s+int)?\s*\*?\s*',f_type):
         return "%li", "long"
     if re.fullmatch(r'\s*(signed\s)?\s*long\s+long\s*(int)?\s*\*?\s*',f_type):
@@ -43,6 +36,15 @@ def get_format_from_type(f_type):
         return "%c", "char"
     return "verbatim" #fallback type
 
+def std_str_assert_str(lh,comp,rh):
+    str_ret = ""
+    str_ret += "if(!(assert_str_eq("+lh+","+rh+") "+comp+" 0 )){\n"
+    str_ret += "    return test_failed(\""+lh.replace("\"","\\\"")+comp.replace("\"","\\\"")+rh.replace("\"","\\\"")+"\");\n"
+    str_ret += "} else {\n"
+    str_ret += "    test_passed(\""+lh.replace("\"","\\\"")+comp.replace("\"","\\\"")+rh.replace("\"","\\\"")+"\");\n"
+    str_ret += "}\n"
+    return str_ret
+
 def std_assert_str(lh,comp,rh,f_type):
     str_ret = ""
 
@@ -54,9 +56,12 @@ def std_assert_str(lh,comp,rh,f_type):
 
     if f_type == "verbatim" or format == "verbatim":
         str_ret += "if(assert_true("+lh+" "+comp+" "+rh+")){\n"
-        str_ret += "    return test_failed(\""+lh+" "+comp+" "+rh+"\");\n"
-        str_ret += "} else {\n"
-        str_ret += "    test_passed(\""+lh+" "+comp+" "+rh+"\");\n"
+        str_ret += "    "+"    "+'printf("    Assert failed with message:\\n");\n'
+        str_ret += "    "+"    "+"printf(\"        Asserted: "+lh+" "+comp+" "+rh+"\\n\");\n"
+        str_ret += "    "+"    "+"return -1;\n"
+        str_ret += "    "+"} else {\n"
+        str_ret += "    "+"    "+'printf("    Assert passed with message:\\n");\n'
+        str_ret += "    "+"    "+"printf(\"        Asserted: "+lh+" "+comp+" "+rh+"\\n\");\n"
         str_ret += "}\n"
         return str_ret
     else: #the function type is specified
@@ -67,21 +72,22 @@ def std_assert_str(lh,comp,rh,f_type):
         else:
             ptr = ""
 
-        # explicity cast rh to lh's type 
+        # explicity cast rh to lh's type via tmp variables
         #to prevent eg. int literals comparations with floats to mess up printf
-        type_p = "("+type+")" 
-        
+        #and to prevent fcns to be called multiple times in the same test
+                 
         str_ret += "{\n"
-        str_ret += "    "+f_type +" tmp = "+lh+";\n"
-        str_ret += "    "+"if(assert_true("+ptr+"tmp "+comp+" "+rh+")){\n"
+        str_ret += "    "+f_type +" tmp_lh = "+lh+";\n"
+        str_ret += "    "+f_type +" tmp_rh = "+rh+";\n"
+        str_ret += "    "+"if(assert_true("+ptr+"tmp_lh "+comp+" "+ptr+" tmp_rh"+")){\n"
         str_ret += "    "+"    "+'printf("    Assert failed with message:\\n");\n'
-        str_ret += "    "+"    "+"printf(\"        "+lh+" "+comp+" "+rh+"\\n\");\n"
-        str_ret += "    "+"    "+"printf(\"        Actual: "+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+type_p+"("+rh+")"+");\n"
+        str_ret += "    "+"    "+"printf(\"        Asserted: "+lh+" "+comp+" "+rh+"\\n\");\n"
+        str_ret += "    "+"    "+"printf(\"        Actual:   "+format+" "+comp+" "+format+"\\n\","+ptr+"tmp_lh, tmp_rh);\n"
         str_ret += "    "+"    "+"return -1;\n"
         str_ret += "    "+"} else {\n"
         str_ret += "    "+"    "+'printf("    Assert passed with message:\\n");\n'
-        str_ret += "    "+"    "+"printf(\"        "+lh+" "+comp+" "+rh+"\\n\");\n"
-        str_ret += "    "+"    "+"printf(\"        Actual: "+format+" "+comp+" "+format+"\\n\","+ptr+"tmp,"+type_p+"("+rh+")"+");\n"
+        str_ret += "    "+"    "+"printf(\"        Asserted: "+lh+" "+comp+" "+rh+"\\n\");\n"
+        str_ret += "    "+"    "+"printf(\"        Actual:   "+format+" "+comp+" "+format+"\\n\","+ptr+"tmp_lh, tmp_rh);\n"
         str_ret += "    "+"}\n"
         str_ret += "}\n"
         return str_ret 

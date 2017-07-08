@@ -27,7 +27,7 @@ class cmain:
          
         #make compile bat file
         str_comp_script = self.make_compile_script()
-        f = open(self.trgt_folder+"/compile_"+self.name+".bat",'w', encoding='utf-8-sig')
+        f = open(self.trgt_folder+"/compile.bat",'w', encoding='utf-8-sig')
         f.write(str_comp_script)
         f.close()
 
@@ -48,7 +48,7 @@ class cmain:
         #generate main function
         str_main += "int main(int argc, char** argv){\n"
         str_main += "\n"
-        str_main += "    "+'printf("Staring test!\\n\\n");\n'
+        str_main += "    "+'printf("Starting test!\\n\\n");\n'
         str_main += "\n"
         str_main += "    "+"/* Iterate all registred tests ... */\n"
         str_main += "\n"
@@ -59,10 +59,11 @@ class cmain:
             str_main += "    "+"/* Test functions from file "+cf.file_name+" */\n"
             str_main += "    "+'printf("Starting sub-tests in: '+cf.file_name+'\\n");\n'
             for fcn in cf.l_test_fcn_names:
-                str_main += "    "+"    "+'printf("\\n    Starting sub-test '+fcn+'() ... \\n\\n");\n'
+                str_main += "    "+'printf("\\n    Starting sub-test '+fcn+'() ... \\n\\n");\n'
                 str_main += "    "+"if("+fcn+"()){\n"
                 str_main += "    "+"    "+"/* Test failed */\n"
-                str_main += "    "+"    "+'printf("Test '+fcn+'() failed\\nAborting ...\\n");\n'
+                str_main += "    "+"    "+'printf("\\nSub-test : '+fcn+'()\\n\");\n'
+                str_main += "    "+"    "+'printf("From file: '+cf.file_name+"\\n\\nFAILED!\\n\\nAborting ...\\n\\a\");\n"
                 str_main += "    "+"    "+'exit(EXIT_FAILURE);\n'
                 str_main += "    "+"} else {\n"
                 str_main += "    "+"    "+"/* Test suceeded */\n"
@@ -84,6 +85,6 @@ class cmain:
 
         ret_str = ""
         ret_str += "cd /D "+os.path.abspath(self.trgt_folder)+"\n"
-        ret_str += "cl -TC * "+self.ceepy_path+"\\src\\asserts.c"+" "+"-I"+" "+self.ceepy_path+"\\includes"+"\n"
+        ret_str += "cl -TC *.c "+self.ceepy_path+"\\src\\asserts.c"+" "+"-I"+" "+self.ceepy_path+"\\includes"+"\n"
 
         return ret_str
