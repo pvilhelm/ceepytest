@@ -18,7 +18,7 @@ Usage:
 def main(argv):
     parser = argparse.ArgumentParser(prog = "ceepy")
     parser.add_argument("-f","--src_files",nargs="*",default = [], help="Source test files (replaces -s folder i specified).") 
-    parser.add_argument("-t","--trgt_dir", nargs="?", default = "creepy_test", help="Target folder to generate the test into.")
+    parser.add_argument("-t","--trgt_dir", nargs="?", default = "ceepy_test", help="Target folder to generate the test into.")
     parser.add_argument("-s","--src_dir", nargs="?", default = ".", help="Source folder to scan for *.ct files to generate test off.")
     parser.add_argument("-n", "--test_name", nargs="?", default = "test", help="Name of the generated test.")
 

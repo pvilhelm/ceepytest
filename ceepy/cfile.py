@@ -282,7 +282,7 @@ class cfile:
 
             comp = a[2]
             if(a[3]):#if theres a # infront of rh expression it's python code
-                rh = eval(a[4],{},{}).__str__() #eval python code
+                rh = eval(a[4],self.dict_global_vars,self.dict_local_vars).__str__() #eval python code
             else:
                 rh = a[4]
 
