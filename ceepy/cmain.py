@@ -59,6 +59,9 @@ class cmain:
             str_main += "    "+"/* Test functions from file "+cf.file_name+" */\n"
             str_main += "    "+'printf("Starting sub-tests in: '+cf.file_name+'\\n");\n'
             for fcn in cf.l_test_fcn_names:
+                str_main += "\n"
+                str_main += "    "+'/* Sub-test '+fcn+'*/\n'
+                str_main += "\n"
                 str_main += "    "+'printf("\\n    Starting sub-test '+fcn+'() ... \\n\\n");\n'
                 str_main += "    "+"if("+fcn+"()){\n"
                 str_main += "    "+"    "+"/* Test failed */\n"
@@ -69,6 +72,7 @@ class cmain:
                 str_main += "    "+"    "+"/* Test suceeded */\n"
                 str_main += "    "+"    "+'printf("\\n    Sub-test '+fcn+'() passed ... \\n\\n");\n'
                 str_main += "    "+"}\n"
+                str_main += "\n"
             str_main +="\n"
             str_main += "    "+'printf("Sub-tests passed in: '+cf.file_name+'\\n\\n");\n'
         str_main += "\n"

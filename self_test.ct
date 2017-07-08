@@ -1,0 +1,70 @@
+
+/* 
+ * Self test of Ceepy Test. Process this and compile. 
+ * Should be no errors and test should pass.
+ */
+ 
+//? 1 == 1 §+1 Comment
+
+/*?§This comment should not mess up the assert block
+2 > 1
+1 < 2
+1 != 2
+1 !> 2
+2 !< 1
+2 == 2
+2. > 1.
+1. < 2.
+1. != 2.
+1. !> 2.
+2. !< 1.
+2. == 2.
+?*/
+
+int add(int a, int b){
+	return a+b;
+}
+
+//!int add() §declare add for Ceepy
+
+/*?
+add(1,1) == 2
+2 == add(1,1)
+add(1,1) != 1
+1 != add(1,1)
+add(2,2) > 0
+add(2,2) < add(3,3)
+add(3,3) !< add(1,1)
+add(3,3) !> add(4,4)
+add(3,3) != add(2,2)
+?*/
+
+
+int test_verbatim(){
+	/* Try some function scope test */
+	int a = add(3,3);
+	//% a == 6
+	int b = add(4,4);
+	//% b == 8
+	
+	//% a < b
+
+	return 0; /* Return sucess */
+}
+
+//! int foo()
+int foo(int a){
+	return a+1;
+}
+
+int test_another_test(){
+	/* Check that we can have multiple function scope tests */
+	//% 2 == 2
+	//% foo(2) == 3
+	
+	/* Test some inline python code */
+	
+	//#p("/"+"/% 2 == 2")
+	
+	return 0;
+}
