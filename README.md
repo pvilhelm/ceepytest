@@ -2,7 +2,7 @@
 ### A pytonic PHP/JSP wanna-be C testing framework
 
 Ceepy is a tool to write unit tests for C projects. By writing inline Ceepy formatted code in a 
-.c-file a test is generated with fancy asserts and outputs in C code.
+.c-file Ceepy generates a test with fancy asserts and outputs in C code.
 
 ## For whom is Ceepy?
 
@@ -45,16 +45,17 @@ int test_silly(){
   return 0; /* Return 0 on success */
 }
 ```
-Then execute ceepy in the same directory as the example file is in or specify absolute pathes. 
+Then execute ceepy in the same directory as the example file is in or specify absolute paths to generate the .c files for the test. 
 
-On Windows:
+On Windows from VS developer prompt:
 ```
 py ceepy -f silly_example.ct -t silly_example
 cd silly_example
+compile.bat
 silly_example.exe
 ```
 On a Posix:
-You know what to do ;)
+Use gcc. You know what to do ;)
 
 ## Manual
 
