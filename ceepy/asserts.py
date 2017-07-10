@@ -37,11 +37,22 @@ def get_format_from_type(f_type):
     return "verbatim" #fallback type
 
 def std_str_assert_str(lh,comp,rh):
-    str_ret = ""
-    str_ret += "if(!(assert_str_eq("+lh+","+rh+") "+comp+" 0 )){\n"
-    str_ret += "    return test_failed(\""+lh.replace("\"","\\\"")+comp.replace("\"","\\\"")+rh.replace("\"","\\\"")+"\");\n"
-    str_ret += "} else {\n"
-    str_ret += "    test_passed(\""+lh.replace("\"","\\\"")+comp.replace("\"","\\\"")+rh.replace("\"","\\\"")+"\");\n"
+    lh_e = lh.replace('"','\\"')
+    rh_e = rh.replace('"','\\"')
+	
+    str_ret = "{\n"
+    str_ret += "    "+"char*" +" tmp_lh = "+lh+";\n"
+    str_ret += "    "+"char*" +" tmp_rh = "+rh+";\n"
+    str_ret += "    "+"if(!(assert_str_eq(tmp_lh, tmp_rh) "+comp+" 0 )){\n"
+    str_ret += "    "+"    "+'printf("    Assert failed with message:\\n");\n'
+    str_ret += "    "+"    "+"printf(\"        Asserted: "+lh_e+" "+comp+" "+rh_e+"\\n\");\n"
+    str_ret += "    "+"    "+"printf(\"        Actual:   "+"%s"+" "+comp+" "+"%s"+"\\n\","+"tmp_lh, tmp_rh);\n"
+    str_ret += "    "+"    return -1;\n"
+    str_ret += "    "+"} else {\n"
+    str_ret += "    "+"    "+'printf("    Assert passed with message:\\n");\n'
+    str_ret += "    "+"    "+"printf(\"        Asserted: "+lh_e+" "+comp+" "+rh_e+"\\n\");\n"
+    str_ret += "    "+"    "+"printf(\"        Actual:   "+"%s"+" "+comp+" "+"%s"+"\\n\","+"tmp_lh, tmp_rh);\n"
+    str_ret += "    "+"}\n"
     str_ret += "}\n"
     return str_ret
 
@@ -55,13 +66,15 @@ def std_assert_str(lh,comp,rh,f_type):
     format, type = get_format_from_type(f_type) #check if type suits printf()
 
     if f_type == "verbatim" or format == "verbatim":
-        str_ret += "if(assert_true("+lh+" "+comp+" "+rh+")){\n"
+        str_ret += "{\n"
+        str_ret += "    "+"if(assert_true("+lh+" "+comp+" "+rh+")){\n"
         str_ret += "    "+"    "+'printf("    Assert failed with message:\\n");\n'
         str_ret += "    "+"    "+"printf(\"        Asserted: "+lh+" "+comp+" "+rh+"\\n\");\n"
         str_ret += "    "+"    "+"return -1;\n"
         str_ret += "    "+"} else {\n"
         str_ret += "    "+"    "+'printf("    Assert passed with message:\\n");\n'
         str_ret += "    "+"    "+"printf(\"        Asserted: "+lh+" "+comp+" "+rh+"\\n\");\n"
+        str_ret += "    "+"}\n"
         str_ret += "}\n"
         return str_ret
     else: #the function type is specified

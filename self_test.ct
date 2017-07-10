@@ -21,6 +21,19 @@
 2. == 2.
 ?*/
 
+/*?§ Compare strings
+"test"=="test"
+"test"!="not test"
+"a" < "b"
+"aa" < "bb"
+"bb" > "aa"
+"aa" <= "bb"
+"aa" >= "aa"
+"bb" >= "aa"
+"bb" !< "aa"
+"aa" !> "bb"
+?*/
+
 int add(int a, int b){
 	return a+b;
 }
