@@ -1,6 +1,6 @@
 /* silly_example.ct */
 
-int add(int a, int b){ /* Your functions to test should be in separate .c-file normaly */
+static int add(int a, int b){ /* Your functions to test should be in separate .c-file normaly */
   return a+b;
 }
 

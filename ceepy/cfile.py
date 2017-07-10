@@ -192,10 +192,15 @@ class cfile:
         #    for line in self.c_str_additions[pos].splitlines():
         #        self.out_c_str += "    " + line + "\n"        
 
+        l_tmp = self.l_test_fcn_names
+        self.l_test_fcn_names = []
+        self.dict_fcn_wrapper_names_to_local_name = {}
         # Add the "file scope" asserts to a function last in the .c-file
-        main_test_fcn_name = "ceepytest_"+self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")
+        mangled_filename = self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")
+        main_test_fcn_name = "ceepytest_"+mangled_filename
         self.l_test_fcn_names.append(main_test_fcn_name)
-
+		
+        self.dict_fcn_wrapper_names_to_local_name[main_test_fcn_name] = main_test_fcn_name
        
         self.out_c_str +="\n\nint "+main_test_fcn_name+"(){\n"
         for pos in pos_to_add_to:
@@ -203,6 +208,19 @@ class cfile:
                 self.out_c_str += "    " + line + "\n"
         self.out_c_str += "    return 0;\n"
         self.out_c_str += "}\n"
+        self.out_c_str += "\n"
+        
+        # Add wrapper for all local test_ functions and mangle their names
+        
+        for fcn_name in l_tmp:
+            mangled_fcn_name = "ceepy_"+mangled_filename+"_"+fcn_name
+            self.out_c_str += '/* Wrapper for '+fcn_name+' */\n'
+            self.out_c_str += "int "+mangled_fcn_name+"(){\n"
+            self.out_c_str += "    "+"return "+ fcn_name+"();\n"
+            self.out_c_str += "}\n"
+            self.l_test_fcn_names.append(mangled_fcn_name)
+            self.dict_fcn_wrapper_names_to_local_name[mangled_fcn_name] = fcn_name
+        
         self.c_str_additions.clear() 
 
     def remove_ceepyt_comment_lines(self,str):

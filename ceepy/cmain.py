@@ -59,18 +59,19 @@ class cmain:
             str_main += "    "+"/* Test functions from file "+cf.file_name+" */\n"
             str_main += "    "+'printf("Starting sub-tests in: '+cf.file_name+'\\n");\n'
             for fcn in cf.l_test_fcn_names:
+                l_fn_name = cf.dict_fcn_wrapper_names_to_local_name[fcn]
                 str_main += "\n"
-                str_main += "    "+'/* Sub-test '+fcn+'*/\n'
+                str_main += "    "+'/* Sub-test '+l_fn_name+'*/\n'
                 str_main += "\n"
-                str_main += "    "+'printf("\\n    Starting sub-test '+fcn+'() ... \\n\\n");\n'
+                str_main += "    "+'printf("\\n    Starting sub-test '+l_fn_name+'() ... \\n\\n");\n'
                 str_main += "    "+"if("+fcn+"()){\n"
                 str_main += "    "+"    "+"/* Test failed */\n"
-                str_main += "    "+"    "+'printf("\\nSub-test : '+fcn+'()\\n\");\n'
+                str_main += "    "+"    "+'printf("\\nSub-test : '+l_fn_name+'()\\n\");\n'
                 str_main += "    "+"    "+'printf("From file: '+cf.file_name+"\\n\\nFAILED!\\n\\nAborting ...\\n\\a\");\n"
                 str_main += "    "+"    "+'exit(EXIT_FAILURE);\n'
                 str_main += "    "+"} else {\n"
                 str_main += "    "+"    "+"/* Test suceeded */\n"
-                str_main += "    "+"    "+'printf("\\n    Sub-test '+fcn+'() passed ... \\n\\n");\n'
+                str_main += "    "+"    "+'printf("\\n    Sub-test '+l_fn_name+'() passed ... \\n\\n");\n'
                 str_main += "    "+"}\n"
                 str_main += "\n"
             str_main +="\n"

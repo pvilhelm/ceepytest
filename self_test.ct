@@ -34,7 +34,7 @@
 "aa" !> "bb"
 ?*/
 
-int add(int a, int b){
+static int add(int a, int b){
 	return a+b;
 }
 
@@ -62,6 +62,7 @@ int test_verbatim(){
 	
 	//% a < b
 
+	//% "test" == "test" §assure that testing strings works in fcns too
 	return 0; /* Return sucess */
 }
 
