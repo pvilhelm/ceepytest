@@ -53,7 +53,7 @@ add(3,3) != add(2,2)
 ?*/
 
 
-int test_verbatim(){
+static int test_verbatim(){
 	/* Try some function scope test */
 	int a = add(3,3);
 	//% a == 6

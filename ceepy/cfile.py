@@ -134,11 +134,10 @@ class cfile:
             self.dict_strs[m.start(1)] = {"type":"local_asserts","start":m.start(2),"end":m.end(2),"after":m.end(3),"str":tmp_str,"intend":intend}
 
         # find all functions on the form "int test_**** ( )" 
-        for m in re.finditer(r"^\s*(int)\s*(?:(test_[\w\d]*)\s*\(\s*\))",self.out_c_str, re.DOTALL | re.MULTILINE):
-            tmp_str = m[2].strip()
-            start_pos = m.end(2)
- 
-            #self.dict_strs[m.start(1)] = {"type":"test_fcn_decl","start":m.start(2),"end":m.end(2),"after":m.end(2),"str":tmp_str}
+        for m in re.finditer(r"^\s*(static)?\s*(int)\s+(static)?\s*(?:(test_[\w\d]*)\s*\(\s*\))",self.out_c_str, re.DOTALL | re.MULTILINE):
+            tmp_str = m[4].strip()
+            start_pos = m.end(4)
+            
             self.l_test_fcn_names.append(tmp_str)
              
         #process assigns
@@ -197,7 +196,7 @@ class cfile:
         self.dict_fcn_wrapper_names_to_local_name = {}
         # Add the "file scope" asserts to a function last in the .c-file
         mangled_filename = self.file_name.replace(".","_DOT_").replace(" ","_SPACE_")
-        main_test_fcn_name = "ceepytest_"+mangled_filename
+        main_test_fcn_name = "ceepy_filescope_"+mangled_filename
         self.l_test_fcn_names.append(main_test_fcn_name)
 		
         self.dict_fcn_wrapper_names_to_local_name[main_test_fcn_name] = main_test_fcn_name
