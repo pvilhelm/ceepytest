@@ -1,5 +1,5 @@
 ﻿
-import cfile
+import ceepy.cfile
 import datetime
 import os
 
@@ -90,6 +90,6 @@ class cmain:
 
         ret_str = ""
         ret_str += "cd /D "+os.path.abspath(self.trgt_folder)+"\n"
-        ret_str += "cl -TC *.c "+self.ceepy_path+"\\src\\asserts.c"+" "+"-I"+" "+self.ceepy_path+"\\includes"+"\n"
+        ret_str += "cl -TC *.c \""+self.ceepy_path+"\\src\\asserts.c\""+" "+"-I"+" \""+self.ceepy_path+"\\includes\""+"\n"
 
         return ret_str

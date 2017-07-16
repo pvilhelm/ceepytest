@@ -5,8 +5,8 @@ import pathlib
 import re
 import argparse
 
-import cfile
-import cmain
+from . import cfile
+from . import cmain
 
 """ Ceepy Test is a C testing framework.
 

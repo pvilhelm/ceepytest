@@ -5,7 +5,7 @@ import os
 import re
 from io import StringIO
 
-from asserts import *
+from ceepy.asserts import *
 
 VALID_COMP_LIST = ["==","!=","<",">","!>","!<","<=",">="]
 
@@ -20,7 +20,7 @@ class cfile:
         self.out_c_str = "" #eventually this will be the output .c-file
 
         self.dict_local_vars = {"C":"//", "C0":"/*", "C1":"*/"}
-        exec("from eval_util import *",{},self.dict_local_vars)
+        exec("from ceepy.eval_util import *",{},self.dict_local_vars)
         self.dict_global_vars = {}
         self.dict_assigns = {}
         self.dict_asserts = {}
@@ -262,7 +262,7 @@ class cfile:
 
         #setup enviroment
         dir_locals = {}
-        exec("from eval_util import *",{},dir_locals)
+        exec("from ceepy.eval_util import *",{},dir_locals)
 
         #iterate over the assigns expressions and evaluate the right hand side
         #and assign its value to the left hand side and add it to assign dict

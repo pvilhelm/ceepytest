@@ -1,4 +1,4 @@
-from math import *
+﻿from math import *
 
  
 def p(string):
