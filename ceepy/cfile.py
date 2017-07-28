@@ -284,7 +284,7 @@ class cfile:
 
         str_ret = ""
         #iterate over the assert lines and find lh, comparasion and rh
-        for a in re.finditer(r'^\s*(.*?)\s*([=!<>]{1,2})\s*(#)?(.+?)\s*$',str,re.MULTILINE):
+        for a in re.finditer(r'^\s*((?:.*?(?:->)?)*?)\s*((?:==)|(?:<)|(?:>)|(?:!=)|(?:<=)|(?:>=)|(?:!>)|(?:!<))\s*(#)?(.+?)\s*$',str,re.MULTILINE):
 
             #check if lh is a "redeclared" function
             lh = a[1]
@@ -295,6 +295,8 @@ class cfile:
                     f_type = "verbatim"
             else:
                 f_type = "verbatim"
+            
+                
 
 
             comp = a[2]
@@ -303,14 +305,26 @@ class cfile:
             else:
                 rh = a[4]
 
+            #check if rh is a "redeclared" functionl 
+            r =  re.match(r'^\s*(\w+[\w\d]*)\s*\(.*\)\s*$',rh)
+            if(r): #its a function on lh
+                f_type = self.dict_fcn_decls.get(r[1]+"()") 
+                if not f_type: # no type specified in the code
+                    f_type_rh = "verbatim"
+            else:
+                f_type_rh = "verbatim"
 
-                # ok so add this if thers gonna be problem with comparing floats and doubles
+            if f_type == "verbatim":
+                if f_type_rh != "verbatim":
+                    f_type = f_type_rh
+
+            # ok so add this if thers gonna be problem with comparing floats and doubles
             #if lh is float, convert rh string so it ends with f
             #if f_type.find("float")>0:
-                #check if rh is not a floating point literal
-                #iterate over all float literals and add f if missing (so that printf doesnt
-                # try 
-            #    for r in re.finditer(r'\s*[+-]?\s*\d*\.?\d*(?:(?:e|E)[+-]?\d*)?([fFLl])?\s*',rh):
+            #check if rh is not a floating point literal
+            #iterate over all float literals and add f if missing (so that printf doesnt
+            #try 
+            #for r in re.finditer(r'\s*[+-]?\s*\d*\.?\d*(?:(?:e|E)[+-]?\d*)?([fFLl])?\s*',rh):
                  
 
             if comp not in VALID_COMP_LIST:
